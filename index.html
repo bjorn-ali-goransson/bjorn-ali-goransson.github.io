@@ -1,6 +1,35 @@
 <!-- AR.js by @jerome_etienne - github: https://github.com/jeromeetienne/ar.js - info: https://medium.com/arjs/augmented-reality-in-10-lines-of-html-4e193ea9fdbf -->
 <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/examples/vendor/aframe/build/aframe.min.js"></script>
 <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js"></script>
+<script>
+AFRAME.registerComponent('building', {
+  init: function () {
+    var element = this.el;
+    
+    addBox([0, 20, 0], [150, 50, 100], 0.8, 0xC25B3C);
+    addBox([0, 20, 0], [140, 55, 90], 0.8, 0xF1F1F1);
+    addBox([-50, 10, -30], [50, 30, 50], 0.3, 0xC25B3C);
+    addBox([-50, 10, -30], [40, 35, 40], 0.3, 0xF1F1F1);
+    addBox([90, 20, 50], [100, 41, 100], 0.9, 0xC3995D);
+    addBox([90, 20, 50], [90, 45, 90], 0.9, 0xF1F1F1);
+    addBox([100, 20, -30], [70, 35, 100], 0.8, 0xC3995D);
+    addBox([100, 20, -30], [60, 40, 90], 0.8, 0xF1F1F1);
+
+    function addBox(position, dimension, rotation, color){
+      var scale = 0.01;
+      var geometry = new THREE.BoxGeometry(dimension[0] * scale, dimension[1] * scale, dimension[2] * scale);
+      var material = new THREE.MeshLambertMaterial({ color : color, side: THREE.DoubleSide });
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = position[0] * scale;
+      mesh.position.y = position[1] * scale;
+      mesh.position.z = position[2] * scale;
+      mesh.rotation.y = Math.PI * rotation / 2;
+
+      element.object3D.add(mesh);
+    }
+  }
+});
+</script>
 <body style='margin : 0px; overflow: hidden;'>
   <style>
   #arjsDebugUIContainer {
@@ -8,9 +37,9 @@
   }
   </style>
 	<a-scene embedded arjs='trackingMethod: best;'>
-      <a-anchor hit-testing-enabled='true'>
-   		<a-box position='0 0.5 0' material='opacity: 0.5;'></a-box>
-      </a-anchor>
-		<a-camera-static/>
+    <a-marker preset='hiro'>
+      <a-entity building></a-entity>
+    </a-marker>
+    <a-entity camera></a-entity>
 	</a-scene>
 </body>
