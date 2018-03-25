@@ -20,6 +20,8 @@
     value = value.replace(/</g, '%3C');
     value = value.replace(/>/g, '%3E');
     value = value.replace(/#/g, '%23');
+    value = value.replace(/{/g, '%7B');
+    value = value.replace(/}/g, '%7D');
     
     output.value = 'background-image: url("data:image/svg+xml,' + value + '");';
   };
@@ -37,6 +39,8 @@
     value = value.replace(/%3C/g, '<');
     value = value.replace(/%3E/g, '>');
     value = value.replace(/%23/g, '#');
+    value = value.replace(/%7B/g, '{');
+    value = value.replace(/%7D/g, '}');
     
     value = formatXml(value);
     
