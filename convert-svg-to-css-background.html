@@ -15,6 +15,34 @@
   input.onchange = function(){
     var value = input.value;
     
+    var width = value.match("<svg[^>]+width=['\"](\\d+)['\"]");
+    
+    if(width){
+      width = width[1];
+    }
+    
+    var height = value.match("<svg[^>]+height=['\"](\\d+)['\"]");
+    
+    if(height){
+      height = height[1];
+    }
+    
+    var viewBox = value.match("<svg[^>]+viewBox=['\"](\\d+ \\d+ \\d+ \\d+)['\"]");
+    
+    if(viewBox){
+      viewBox = viewBox[1];
+    }
+    
+    if(width && height && !viewBox){
+      value = value.replace('>', ' viewBox="0 0 ' + width + ' ' + height + '">');
+    }
+    
+    if(!width && !height && viewBox){
+      var viewBoxSplit = viewBox.split(' ');
+      value = value.replace('>', ' width="' + viewBoxSplit[2] + '">');
+      value = value.replace('>', ' height="' + viewBoxSplit[3] + '">');
+    }
+    
     value = value.replace(/\n/g, '');
     value = value.replace(/"/g, '\'');
     value = value.replace(/</g, '%3C');
