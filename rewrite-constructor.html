@@ -1,0 +1,67 @@
+<style>
+  textarea {
+    width: 45%;
+    height: 300px;
+  }
+</style>
+
+<textarea id="input">
+
+    public class EventsBootstrapper : IInitializableModule
+    {
+        public static ILog Log { get; set; }
+        public EPiServerCms Cms { get; set; }
+        public IContentRecursor ContentRecursor { get; set; }
+        public IQueueAdder QueueAdder { get; set; }
+        public ContentLanguageSettingRepository ContentLanguageSettingRepository { get; set; }
+</textarea>
+<textarea id="output"></textarea>
+
+<script>
+  var input = document.getElementById('input');
+  input.focus();
+  var output = document.getElementById('output');
+  
+  function update(){
+    var value = input.value;
+    
+    if(!value){
+      return;
+    }
+    
+    var name = value.match(/public class (\w+)/i);
+    
+    if(name){
+      name = name[1];
+    }
+    
+    var properties = [];
+    
+    value = value.replace(/public (\w+) (\w+) \{ get; set; \}/g, function(match, type, name){
+      properties.push({
+        type,
+        name
+      });
+      
+      return type + ' ' + name + ' { get; }';
+    });
+    
+    var line = '\n';
+    var level1 = '        ';
+    var level2 = '            ';
+    
+    function local(name){
+      return name.substr(0, 1).toLowerCase() + name.substr(1);
+    }
+    
+    output.value =
+      value + line +
+      line +
+      level1 + 'public ' + name + '(' + properties.map(p => p.type + ' ' + local(p.name)).join(', ') + ')' + line +
+      level1 + '{' + line +
+      level2 + properties.map(p => p.name + ' = ' + local(p.name) + ';').join('\n' + level2) + line +
+      level1 + '}' + line;
+  };
+  
+  input.onkeyup = update;
+</script>
