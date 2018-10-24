@@ -5,16 +5,7 @@
   }
 </style>
 
-<textarea id="input">
-
-    public class EventsBootstrapper : IInitializableModule
-    {
-        public static ILog Log { get; set; }
-        public EPiServerCms Cms { get; set; }
-        public IContentRecursor ContentRecursor { get; set; }
-        public IQueueAdder QueueAdder { get; set; }
-        public ContentLanguageSettingRepository ContentLanguageSettingRepository { get; set; }
-</textarea>
+<textarea id="input"></textarea>
 <textarea id="output"></textarea>
 
 <script>
@@ -23,21 +14,34 @@
   var output = document.getElementById('output');
   
   function update(){
+    var line = '\n';
+    var level1 = '        ';
+    var level2 = '            ';
+    
     var value = input.value;
     
     if(!value){
       return;
     }
     
-    var name = value.match(/public class (\w+)/i);
-    
-    if(name){
-      name = name[1];
+    if(value.match(/public \w+\(/)){
+      var parameters = [];
+      
+      value.replace(/public \w+\(([^)]+)\)/, function(match, params){
+        params.split(', ').forEach(param => {
+          var paramExploded = param.split(' ');
+          var type = paramExploded[0];
+          var name = paramExploded[1];
+          parameters.push({type, name});
+        });
+      });
+      output.value = parameters.map(param => `Mock.Of<${param.type}>()`).join(', ');
+      return;
     }
     
     var properties = [];
     
-    value = value.replace(/public (\w+) (\w+) \{ get; set; \}/g, function(match, type, name){
+    value = value.replace(/(?:public )?(\w+) (\w+) \{ get; (?:set; )?\}/g, function(match, type, name){
       properties.push({
         type,
         name
@@ -46,9 +50,14 @@
       return type + ' ' + name + ' { get; }';
     });
     
-    var line = '\n';
-    var level1 = '        ';
-    var level2 = '            ';
+    var name = value.match(/public class (\w+)/i);
+    
+    if(name){
+      name = name[1];
+    } else {
+      output.value = level2 + properties.map(p => p.name + ' = ServiceLocator.Current.GetInstance<' + p.type + '>();').join('\n' + level2);
+      return;
+    }
     
     function local(name){
       return name.substr(0, 1).toLowerCase() + name.substr(1);
@@ -60,7 +69,7 @@
       level1 + 'public ' + name + '(' + properties.map(p => p.type + ' ' + local(p.name)).join(', ') + ')' + line +
       level1 + '{' + line +
       level2 + properties.map(p => p.name + ' = ' + local(p.name) + ';').join('\n' + level2) + line +
-      level1 + '}' + line;
+      level1 + '}';
   };
   
   input.onkeyup = update;
