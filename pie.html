@@ -151,6 +151,16 @@
       })();
     </script>
     <div id="holder" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;"></div>
+    <script src="js.blend.js"></script>
+    <script>
+      function readBlend(data){
+        var group = new THREE.Object3D();
+
+			  JSBLEND(data).then(blend => blend.three.loadScene(group));
+        
+        return group;
+      }
+    </script>
     <script>
       var holder = document.getElementById('holder');
       holder.ondragover = function() {
@@ -165,17 +175,26 @@
         this.style.background = '';
         e.preventDefault();
 
-        var file = e.dataTransfer.files[0],
-          reader = new FileReader();
+        var file = e.dataTransfer.files[0];
+        var reader = new FileReader();
+        
+        if(file.name.match(/\.pie$/)){
           reader.onload = function(event) {
-          console.log(event.target);
-
-          scene.remove(group);
-          group = readPie(event.target.result);
-          scene.add(group);
-        };
-        console.log(file);
-        reader.readAsText(file);
+            scene.remove(group);
+            group = readPie(event.target.result);
+            scene.add(group);
+          };
+          reader.readAsText(file);
+        } else if(file.name.match(/\.blend$/)){
+          reader.onload = function(event) {
+            scene.remove(group);
+            group = readBlend(event.target.result);
+            scene.add(group);
+          };
+          reader.readAsArrayBuffer(file);
+        } else {
+          alert('Unknown file format');
+        }
 
         return false;
       };
