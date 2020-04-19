@@ -18,11 +18,14 @@ gl.shaderSource(vertShader,
   'precision mediump float;\n' +
   '\n' +
   'in vec3 c;\n' +
+  'in float startDegrees;\n' +
+  'uniform uint time;\n' +
   'out vec4 color;\n' +
   '\n' +
   'void main()\n' +
   '{\n' +
-  '  gl_Position = vec4(c, 1.0);\n' +
+  '  float rotation = radians(float(time % uint(360)));\n' +
+  '  gl_Position = vec4(c.x + sin(rotation) * 0.1, c.y + cos(rotation) * 0.1, c.z, 1.0);\n' +
   '  color = vec4(0.5, 0, 0.5, 1.0);\n' +
   '}\n'
 );
@@ -65,12 +68,11 @@ if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
 const vbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-  0.5,-0.5,0.0,
-  -0.5,-0.5,0.0,
-  -0.5,0.5,0.0,
-  0.5,0.5,0.0,
+  0.5, -0.5, 0.0, 0,
+  -0.5, -0.5, 0.0, 90,
+  -0.5, 0.5, 0.0, 180,
+  0.5, 0.5, 0.0, 270,
 ]), gl.STATIC_DRAW);
-
 
 
 
@@ -83,15 +85,21 @@ gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([
 
 
 
-
 const coord = gl.getAttribLocation(prog, "c");
-gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 4 * 4, 0);
 gl.enableVertexAttribArray(coord);
 
+const startDegrees = gl.getAttribLocation(prog, "startDegrees");
+gl.vertexAttribPointer(startDegrees, 1, gl.FLOAT, false, 4 * 4, 3);
+gl.enableVertexAttribArray(startDegrees);
 
 
+
+const time = gl.getUniformLocation(prog, "time");
 
 // drawing
+
+var i = 0;
 
 setInterval(function(){
   gl.clearColor(1, 0, 0, 1);
@@ -99,5 +107,6 @@ setInterval(function(){
   
   gl.useProgram(prog);
   
+  gl.uniform1ui(time, 0);
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-}, 1000);
+}, 10);
