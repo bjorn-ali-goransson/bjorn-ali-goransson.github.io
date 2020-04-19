@@ -6,24 +6,59 @@ canvas.height = 500;
 document.querySelector('body').appendChild(canvas);
 
 // Initialize the GL context
-const gl = canvas.getContext('webgl');
+const gl = canvas.getContext('webgl2');
 
 gl.viewport(0,0,canvas.width,canvas.height);
 
 // create program
 
 const vertShader = gl.createShader(gl.VERTEX_SHADER);
-gl.shaderSource(vertShader, 'attribute vec3 c;void main(void){gl_Position=vec4(c, 1.0);}');
+gl.shaderSource(vertShader, 
+  '#version 300 es\n' +
+  'precision mediump float;\n' +
+  '\n' +
+  'in vec3 c;\n' +
+  'out vec4 color;\n' +
+  '\n' +
+  'void main()\n' +
+  '{\n' +
+  '  gl_Position = vec4(c, 1.0);\n' +
+  '  color = vec4(0.5, 0, 0.5, 1.0);\n' +
+  '}\n'
+);
 gl.compileShader(vertShader);
 
+if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
+  console.error("Vertex shader did not compile successfully: " + gl.getShaderInfoLog(vertShader));
+}
+
 const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-gl.shaderSource(fragShader, 'void main(void){gl_FragColor=vec4(0,1,0,1);}');
+gl.shaderSource(fragShader,
+  '#version 300 es\n' +
+  'precision mediump float;\n' +
+  '\n' +
+  'in vec4 color;\n' +
+  'out vec4 FragColor;\n' +
+  '\n' +
+  'void main(void)\n' +
+  '{\n' +
+  '  FragColor = color;\n' +
+  '}\n'
+);
 gl.compileShader(fragShader);
+
+if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
+  console.error("Fragment shader did not compile successfully: " + gl.getShaderInfoLog(fragShader));
+}
 
 const prog = gl.createProgram();
 gl.attachShader(prog, vertShader);
 gl.attachShader(prog, fragShader);
 gl.linkProgram(prog);
+
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+  console.error("Shader program did not link successfully: " + gl.getProgramInfoLog(prog));
+}
 
 // create vbo
 
@@ -53,10 +88,16 @@ const coord = gl.getAttribLocation(prog, "c");
 gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
 gl.enableVertexAttribArray(coord);
 
+
+
+
 // drawing
 
-gl.clearColor(1, 0, 0, 1);
-gl.clear(gl.COLOR_BUFFER_BIT);
-
-gl.useProgram(prog);
-gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+setInterval(function(){
+  gl.clearColor(1, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  gl.useProgram(prog);
+  
+  gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+}, 1000);
