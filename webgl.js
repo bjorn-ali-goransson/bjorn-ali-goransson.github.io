@@ -50,7 +50,7 @@ gl.shaderSource(fragShader,
   '\n' +
   'void main(void)\n' +
   '{\n' +
-  '  FragColor = texture(textureData, TextureCoordinates);\n' +
+  '  FragColor = texture(textureData, TextureCoordinates) * vec4(color) * 99.0;\n' +
   '}\n'
 );
 gl.compileShader(fragShader);
@@ -109,6 +109,7 @@ const textureData = gl.getUniformLocation(prog, "textureData");
 
 var i = 0;
 
+gl.useProgram(prog);
 //  
 
 var image = new Image();
@@ -118,16 +119,13 @@ image.onload = function () {
   var texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.uniform1i(textureData, 0);
 
   setInterval(function(){
     gl.clearColor(1, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    
-    gl.useProgram(prog);
-    
     gl.uniform1ui(time, i++);
-    gl.uniform1i(textureData, 0);
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
   }, 10);
   
